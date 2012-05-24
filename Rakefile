@@ -46,6 +46,36 @@ include FileUtils
 ROOT         = Pathname(File.dirname(__FILE__))
 DOWNLOAD_DIR = ROOT + "tmp/download"
 ASSETS       = ROOT + 'vendor/assets'
+PACKAGE      = "jquery-raty-rails"
+GEMSPEC      = "#{PACKAGE}.gemspec"
+
+def load_gem
+  eval File.open(GEMSPEC).read
+end
+
+def gem_name
+  gem = load_gem
+  version = gem.version.to_s
+  "#{PACKAGE}-#{version}.gem"
+end
+
+# Tasks
+
+desc "Build the gem"
+task :gem => gem_name
+
+desc "Build the gem"
+file gem_name do
+  require 'rubygems/builder'
+  raise "Gem package not defined" unless defined? Gem
+  spec = eval File.open(GEMSPEC).read
+  Gem::Builder.new(spec).build
+end
+
+desc "Publish the gem"
+task :publish => :gem do
+  sh "gem push #{gem_name}"
+end
 
 desc "Update to the most recently released version of jQuery Raty"
 task :update => [:download_raty, :copy_raty] do
